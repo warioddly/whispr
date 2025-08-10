@@ -12,35 +12,38 @@ struct ChatView: View {
     @StateObject private var viewModel = ChatViewModel()
 
     var body: some View {
-        NavigationStack {
-            VStack {
+        VStack {
 
-                ScrollView {
-                    LazyVStack(alignment: .leading) {
-                        ForEach(viewModel.messages, id: \.id) { message in
-                            Text(message.text)
-                                .padding(.bottom, 1)
-                        }
-
-                        ConsoleTextFieldView()
+            ScrollView {
+                LazyVStack(alignment: .leading) {
+                    ForEach(viewModel.messages, id: \.id) { message in
+                        Text(message.text)
+                            .padding(.bottom, 1)
                     }
-                    .padding()
-                }
 
-                ChatToolbarView()
+                    ConsoleTextFieldView()
+                }
+                .padding()
             }
-            .frame(maxWidth: .infinity)
-            .navigationTitle("Chat")
-            .navigationBarTitleDisplayMode(.inline)
+
+            ChatToolbarView()
         }
+        .frame(maxWidth: .infinity)
+        .navigationTitle("Chat")
+        .navigationBarTitleDisplayMode(.inline)
         .environmentObject(viewModel)
     }
 }
 
 struct ChatToolbarView: View {
+
+    @EnvironmentObject var router: Router
+
     var body: some View {
         HStack {
-            Button("Chat") {}
+            Button("Exit") {
+                router.popToRoot()
+            }
             Spacer()
             Button("Help") {}
             Spacer()
@@ -49,14 +52,19 @@ struct ChatToolbarView: View {
 
             // TODO: Добавить иконку для показа/скрытия клавиатуры
             Button {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                UIApplication.shared.sendAction(
+                    #selector(UIResponder.resignFirstResponder),
+                    to: nil,
+                    from: nil,
+                    for: nil
+                )
             } label: {
                 Image(systemName: "chevron.down")
             }
         }
         .safeAreaPadding(.horizontal)
         .safeAreaPadding(.bottom)
-        
+
     }
 }
 

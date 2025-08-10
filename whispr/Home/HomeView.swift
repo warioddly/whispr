@@ -9,6 +9,8 @@ import SwiftUI
 
 struct HomeView: View {
 
+    @EnvironmentObject var router: Router
+    
     private let appVersion =
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         ?? ""
@@ -17,8 +19,7 @@ struct HomeView: View {
 
     var body: some View {
 
-        NavigationStack {
-
+        VStack {
             Spacer()
 
             VStack(alignment: .center, spacing: 16) {
@@ -27,12 +28,16 @@ struct HomeView: View {
                     .fontWeight(.bold)
                     .font(.system(.title, design: .monospaced))
 
-                NavigationLink(destination: CreateRoomView()) {
+                Button {
+                    router.push(.createRoom)
+                } label: {
                     Label("Create", systemImage: "plus.circle.fill")
                         .frame(maxWidth: 220, maxHeight: 36)
                 }
 
-                NavigationLink(destination: JoinRoomView()) {
+                Button {
+                    router.push(.joinRoom)
+                } label: {
                     Label("Join", systemImage: "link.circle.fill")
                         .frame(maxWidth: 220, maxHeight: 36)
                 }
@@ -49,13 +54,13 @@ struct HomeView: View {
                 .foregroundStyle(.green.opacity(0.5))
                 .font(.system(.footnote, design: .monospaced))
         }
-
     }
 
 }
 
 #Preview {
-    HomeView()
+    RootView()
+        .environmentObject(Router())
         .colorScheme(.dark)
         .foregroundStyle(.green)
         .font(.system(.body, design: .monospaced))

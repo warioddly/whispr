@@ -5,52 +5,54 @@
 //  Created by GØDØFIMØ on 11/8/25.
 //
 
-import SwiftUI
-import Combine
+import MultipeerConnectivity
 
-enum Route: Hashable {
-    case home
-    case joinRoom
-    case createRoom
-    case chat
-}
+class MPCBrowser: NSObject, ObservableObject {
+    private let serviceType = "whispr"
+    private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
+    private var browser: MCNearbyServiceBrowser!
 
-class Router: ObservableObject {
-    @Published var path = NavigationPath()
-    
-    func push(_ route: Route) {
-        path.append(route)
+    @Published var foundPeers: [MCPeerID] = []
+
+    override init() {
+        super.init()
+        browser = MCNearbyServiceBrowser(
+            peer: myPeerID,
+            serviceType: serviceType
+        )
+        browser.delegate = self
+        browser.startBrowsingForPeers()
     }
-    
-    func pop() {
-        path.removeLast()
-    }
-    
-    func popToRoot() {
-        path.removeLast(path.count)
+
+    deinit {
+        browser.stopBrowsingForPeers()
     }
 }
 
-
-struct RootView: View {
-    @StateObject private var router = Router()
-    
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            HomeView()
-                .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .home:
-                        HomeView()
-                    case .chat:
-                        ChatView()
-                    case .createRoom:
-                        CreateRoomView()
-                    case .joinRoom:
-                        JoinRoomView()
-                    }
-                }
+extension MPCBrowser: MCNearbyServiceBrowserDelegate {
+    func browser(
+        _ browser: MCNearbyServiceBrowser,
+        foundPeer peerID: MCPeerID,
+        withDiscoveryInfo info: [String: String]?
+    ) {
+        DispatchQueue.main.async {
+            if !self.foundPeers.contains(peerID) {
+                self.foundPeers.append(peerID)
+            }
         }
-        .environmentObject(router)
+    }
+
+    func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
+        DispatchQueue.main.async {
+            self.foundPeers.removeAll { $0 == peerID }
+        }
+    }
+
+    // Обязательно реализуй этот метод, даже если пусто
+    func browser(
+        _ browser: MCNearbyServiceBrowser,
+        didNotStartBrowsingForPeers error: Error
+    ) {
+        print("Ошибка браузера: \(error.localizedDescription)")
     }
 }

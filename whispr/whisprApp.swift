@@ -21,7 +21,7 @@ struct whisprApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ChatView()
+            RootView()
                 .colorScheme(.dark)
                 .foregroundStyle(.green)
                 .font(.system(.body, design: .monospaced))
