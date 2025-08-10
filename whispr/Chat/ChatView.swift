@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChatView: View {
 
-    @StateObject private var vm = ChatViewModel()
+    @StateObject private var viewModel = ChatViewModel()
 
     var body: some View {
         NavigationStack {
@@ -17,7 +17,7 @@ struct ChatView: View {
 
                 ScrollView {
                     LazyVStack(alignment: .leading) {
-                        ForEach(vm.messages, id: \.id) { message in
+                        ForEach(viewModel.messages, id: \.id) { message in
                             Text(message.text)
                                 .padding(.bottom, 1)
                         }
@@ -33,7 +33,7 @@ struct ChatView: View {
             .navigationTitle("Chat")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .environmentObject(vm)
+        .environmentObject(viewModel)
     }
 }
 
@@ -62,7 +62,7 @@ struct ChatToolbarView: View {
 
 struct ConsoleTextFieldView: View {
 
-    @EnvironmentObject var vm: ChatViewModel
+    @EnvironmentObject var vmviewModel: ChatViewModel
     @State private var input: String = ""
 
     var body: some View {
@@ -73,7 +73,7 @@ struct ConsoleTextFieldView: View {
                 .disableAutocorrection(true)
                 .autocapitalization(.none)
                 .onSubmit {
-                    vm.sendMessage("user > \(input)")
+                    vmviewModel.sendMessage("user > \(input)")
                     input = ""
                 }
         }
