@@ -5,13 +5,12 @@
 //  Created by GØDØFIMØ on 11/8/25.
 //
 
-import MultipeerConnectivity
 import SwiftUI
 
 struct JoinRoomView: View {
 
     @EnvironmentObject var router: Router
-    @StateObject private var mpcBrowser = MPCBrowser()
+    @StateObject private var mpcManager = MPCManager()
 
     var body: some View {
         VStack {
@@ -22,7 +21,7 @@ struct JoinRoomView: View {
                 Label("Join", systemImage: "plus.circle.fill")
             }
 
-            List(mpcBrowser.foundPeers, id: \.self) { peer in
+            List(mpcManager.foundPeers, id: \.self) { peer in
                 HStack {
                     Text(peer.displayName)
                     Spacer()
@@ -36,6 +35,5 @@ struct JoinRoomView: View {
         }
         .frame(maxWidth: .infinity)
         .navigationTitle("Connect Room")
-        .navigationBarBackButtonHidden(true)
     }
 }

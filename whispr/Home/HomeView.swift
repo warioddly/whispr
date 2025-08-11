@@ -32,14 +32,14 @@ struct HomeView: View {
                     router.push(.createRoom)
                 } label: {
                     Label("Create", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: 220, maxHeight: 36)
+                        .frame(maxWidth: 200, maxHeight: 36)
                 }
 
                 Button {
                     router.push(.joinRoom)
                 } label: {
                     Label("Join", systemImage: "link.circle.fill")
-                        .frame(maxWidth: 220, maxHeight: 36)
+                        .frame(maxWidth: 200, maxHeight: 36)
                 }
 
             }
