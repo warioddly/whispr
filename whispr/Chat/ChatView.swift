@@ -6,18 +6,21 @@
 //
 
 import SwiftUI
+import MultipeerConnectivity
 
 struct ChatView: View {
 
+    var peer: MCPeerID
     @StateObject private var viewModel = ChatViewModel()
-
+    @EnvironmentObject var mpcManager: MPCManager
+    
     var body: some View {
         VStack {
 
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    ForEach(viewModel.messages, id: \.id) { message in
-                        Text(message.text)
+                    ForEach(mpcManager.messages, id: \.self) { message in
+                        Text(message)
                             .padding(.bottom, 1)
                     }
 
@@ -72,6 +75,7 @@ struct ConsoleTextFieldView: View {
 
     @EnvironmentObject var vmviewModel: ChatViewModel
     @State private var input: String = ""
+    @EnvironmentObject var mpcManager: MPCManager
 
     var body: some View {
         HStack(alignment: .center) {
@@ -81,6 +85,7 @@ struct ConsoleTextFieldView: View {
                 .disableAutocorrection(true)
                 .autocapitalization(.none)
                 .onSubmit {
+                    mpcManager.send(message: input)
                     vmviewModel.sendMessage("user > \(input)")
                     input = ""
                 }
@@ -88,9 +93,9 @@ struct ConsoleTextFieldView: View {
     }
 }
 
-#Preview {
-    ChatView()
-        .colorScheme(.dark)
-        .foregroundStyle(.green)
-        .font(.system(.body, design: .monospaced))
-}
+//#Preview {
+//    ChatView(peer: <#T##MCPeerID#>)
+//        .colorScheme(.dark)
+//        .foregroundStyle(.green)
+//        .font(.system(.body, design: .monospaced))
+//}

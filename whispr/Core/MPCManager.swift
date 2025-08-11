@@ -1,68 +1,102 @@
+import Foundation
 //
 //  Router.swift
 //  whispr
 //
 //  Created by GØDØFIMØ on 11/8/25.
 //
-
 import MultipeerConnectivity
+import MultipeerConnectivity
+import Combine
 
 class MPCManager: NSObject, ObservableObject {
- 
-    private let serviceType = "whispr"
-    private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
+    private let serviceType = "my-chat"
     
-    private var session: MCSession!
-    private var browser: MCNearbyServiceBrowser!
-    private var advertiser: MCNearbyServiceAdvertiser!
+    public let myPeerId = MCPeerID(displayName: UIDevice.current.name)
+    private let serviceAdvertiser: MCNearbyServiceAdvertiser
+    private let serviceBrowser: MCNearbyServiceBrowser
     
     @Published var foundPeers: [MCPeerID] = []
     @Published var connectedPeers: [MCPeerID] = []
+    @Published var messages: [String] = []
     
-    // Колбэк при получении данных
-    var onDataReceived: ((Data, MCPeerID) -> Void)?
+    private var session: MCSession
     
     override init() {
+        session = MCSession(peer: myPeerId, securityIdentity: nil, encryptionPreference: .required)
+        serviceAdvertiser = MCNearbyServiceAdvertiser(peer: myPeerId, discoveryInfo: nil, serviceType: serviceType)
+        serviceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: serviceType)
+        
         super.init()
         
-        session = MCSession(peer: myPeerID, securityIdentity: nil, encryptionPreference: .required)
         session.delegate = self
+        serviceAdvertiser.delegate = self
+        serviceBrowser.delegate = self
         
-        browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType)
-        browser.delegate = self
-        browser.startBrowsingForPeers()
-        
-        advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
-        advertiser.delegate = self
-        advertiser.startAdvertisingPeer()
+        serviceAdvertiser.startAdvertisingPeer()
+        serviceBrowser.startBrowsingForPeers()
     }
     
-    deinit {
-        browser.stopBrowsingForPeers()
-        advertiser.stopAdvertisingPeer()
-        session.disconnect()
-    }
-
     func invite(peer: MCPeerID) {
-        browser.invitePeer(peer, to: session, withContext: nil, timeout: 10)
+        serviceBrowser.invitePeer(peer, to: session, withContext: nil, timeout: 10)
     }
     
-    func send(data: Data) {
+    func send(message: String) {
         guard !session.connectedPeers.isEmpty else { return }
-        do {
-            try session.send(data, toPeers: session.connectedPeers, with: .reliable)
-        } catch {
-            print("Ошибка отправки: \(error.localizedDescription)")
+        if let data = message.data(using: .utf8) {
+            do {
+                try session.send(data, toPeers: session.connectedPeers, with: .reliable)
+                DispatchQueue.main.async {
+                    self.messages.append("Me: \(message)")
+                }
+            } catch {
+                print("Ошибка при отправке сообщения: \(error)")
+            }
         }
     }
 }
 
-
-// MARK: - Browser Delegate
-extension MPCManager: MCNearbyServiceBrowserDelegate {
-    func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
+extension MPCManager: MCSessionDelegate {
+    func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         DispatchQueue.main.async {
-            if !self.foundPeers.contains(peerID) {
+            self.connectedPeers = session.connectedPeers
+            let stateString: String
+            switch state {
+            case .connected: stateString = "connected"
+            case .connecting: stateString = "connecting"
+            case .notConnected: stateString = "not connected"
+            @unknown default: stateString = "unknown"
+            }
+            print("\(peerID.displayName) is \(stateString)")
+        }
+    }
+    
+    func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        if let message = String(data: data, encoding: .utf8) {
+            DispatchQueue.main.async {
+                self.messages.append("\(peerID.displayName): \(message)")
+            }
+        }
+    }
+    
+    // Ниже обязательные методы, можно оставить пустыми
+    func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {}
+    func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {}
+    func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {}
+}
+
+extension MPCManager: MCNearbyServiceAdvertiserDelegate {
+    func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID,
+                    withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        // Автоматически принимаем приглашения
+        invitationHandler(true, session)
+    }
+}
+
+extension MPCManager: MCNearbyServiceBrowserDelegate {
+    func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
+        DispatchQueue.main.async {
+            if !self.foundPeers.contains(peerID) && peerID != self.myPeerId {
                 self.foundPeers.append(peerID)
             }
         }
@@ -70,53 +104,7 @@ extension MPCManager: MCNearbyServiceBrowserDelegate {
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         DispatchQueue.main.async {
-            self.foundPeers.removeAll { $0 == peerID }
+            self.foundPeers.removeAll(where: { $0 == peerID })
         }
     }
-    
-    func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
-        print("Ошибка браузера: \(error.localizedDescription)")
-    }
-}
-
-
-// MARK: - Advertiser Delegate
-extension MPCManager: MCNearbyServiceAdvertiserDelegate {
-    func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        invitationHandler(true, session)
-    }
-    
-    func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
-        print("Ошибка рекламы: \(error.localizedDescription)")
-    }
-}
-
-
-// MARK: - Session Delegate
-extension MPCManager: MCSessionDelegate {
-    func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        DispatchQueue.main.async {
-            switch state {
-            case .connected:
-                if !self.connectedPeers.contains(peerID) {
-                    self.connectedPeers.append(peerID)
-                }
-            case .notConnected:
-                self.connectedPeers.removeAll { $0 == peerID }
-            default:
-                break
-            }
-        }
-    }
-    
-    func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        DispatchQueue.main.async {
-            self.onDataReceived?(data, peerID)
-        }
-    }
-    
-    // Остальные методы нужны, даже если не используем
-    func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {}
-    func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {}
-    func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {}
 }
