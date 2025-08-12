@@ -35,6 +35,7 @@ struct whisprApp: App {
 
     var body: some Scene {
         WindowGroup {
+
             RootView()
                 .colorScheme(.dark)
                 .foregroundStyle(.green)
