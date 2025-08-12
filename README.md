@@ -3,7 +3,6 @@
 > This is a simple and user-friendly chat app built with SwiftUI using MultipeerConnectivity.
 The app enables nearby device discovery, peer connections, and real-time messaging.
 
-<br />
 <div style="overflow-x: auto; white-space: nowrap;">
 
 <img width="260" alt="IMG_4489" src="https://github.com/user-attachments/assets/44107c93-544a-4f84-8e9d-b84a11a37101" />
