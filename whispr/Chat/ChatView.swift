@@ -9,8 +9,7 @@ import SwiftUI
 import MultipeerConnectivity
 
 struct ChatView: View {
-
-    var peer: MCPeerID
+    
     @StateObject private var viewModel = ChatViewModel()
     @EnvironmentObject var mpcManager: MPCManager
     
@@ -30,6 +29,11 @@ struct ChatView: View {
             }
 
             ChatToolbarView()
+        }
+        .onDisappear {
+            if (mpcManager.isHost) {
+                mpcManager.stop()
+            }
         }
         .frame(maxWidth: .infinity)
         .navigationTitle("Chat")
@@ -92,10 +96,3 @@ struct ConsoleTextFieldView: View {
         }
     }
 }
-
-//#Preview {
-//    ChatView(peer: <#T##MCPeerID#>)
-//        .colorScheme(.dark)
-//        .foregroundStyle(.green)
-//        .font(.system(.body, design: .monospaced))
-//}

@@ -5,7 +5,6 @@
 //  Created by GØDØFIMØ on 11/8/25.
 //
 
-import MultipeerConnectivity
 import SwiftUI
 
 struct CreateRoomView: View {
@@ -18,9 +17,8 @@ struct CreateRoomView: View {
             Text("This is the Create Room Page")
 
             Button {
-//                mpcManager.stopHosting()
-//                mpcManager.startHosting(serviceType: "my-chat")
-                router.push(.chat(peer: mpcManager.myPeerId))
+                mpcManager.create();
+                router.push(.chat)
             } label: {
                 Text("Create")
             }
@@ -28,12 +26,5 @@ struct CreateRoomView: View {
         }
         .padding()
         .navigationTitle("Create Room")
-        .onDisappear {
-//            mpcManager.stopHosting()
-        }
     }
-}
-
-#Preview {
-    CreateRoomView()
 }

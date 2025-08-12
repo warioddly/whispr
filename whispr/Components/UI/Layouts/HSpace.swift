@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct VSpace: View {
+struct HSpace: View {
 
-    var height: CGFloat
+    var width: Double
 
     var body: some View {
         Spacer()
-            .frame(height: height)
+            .frame(width: width)
     }
 
 }

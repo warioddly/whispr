@@ -13,7 +13,7 @@ enum Route: Hashable {
     case home
     case joinRoom
     case createRoom
-    case chat(peer: MCPeerID)
+    case chat
 }
 
 class Router: ObservableObject {
@@ -44,8 +44,8 @@ struct RootView: View {
                     switch route {
                     case .home:
                         HomeView()
-                    case .chat(let peer):
-                        ChatView(peer: peer)
+                    case .chat:
+                        ChatView()
                     case .createRoom:
                         CreateRoomView()
                     case .joinRoom:

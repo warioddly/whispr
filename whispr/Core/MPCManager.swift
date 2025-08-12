@@ -1,11 +1,11 @@
-import Foundation
 //
-//  Router.swift
+//  MPCManager.swift
 //  whispr
 //
 //  Created by GØDØFIMØ on 11/8/25.
 //
-import MultipeerConnectivity
+
+import Foundation
 import MultipeerConnectivity
 import Combine
 
@@ -20,6 +20,8 @@ class MPCManager: NSObject, ObservableObject {
     @Published var connectedPeers: [MCPeerID] = []
     @Published var messages: [String] = []
     
+    public var isHost: Bool = false
+    
     private var session: MCSession
     
     override init() {
@@ -32,9 +34,22 @@ class MPCManager: NSObject, ObservableObject {
         session.delegate = self
         serviceAdvertiser.delegate = self
         serviceBrowser.delegate = self
-        
+    }
+    
+    func create() {
+        isHost = true
         serviceAdvertiser.startAdvertisingPeer()
+    }
+    
+    func join() {
         serviceBrowser.startBrowsingForPeers()
+    }
+    
+    func stop() {
+        isHost = false
+        serviceAdvertiser.stopAdvertisingPeer()
+        serviceBrowser.stopBrowsingForPeers()
+        session.disconnect()
     }
     
     func invite(peer: MCPeerID) {
@@ -54,6 +69,7 @@ class MPCManager: NSObject, ObservableObject {
             }
         }
     }
+    
 }
 
 extension MPCManager: MCSessionDelegate {
@@ -79,7 +95,6 @@ extension MPCManager: MCSessionDelegate {
         }
     }
     
-    // Ниже обязательные методы, можно оставить пустыми
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {}
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {}
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {}
@@ -88,7 +103,6 @@ extension MPCManager: MCSessionDelegate {
 extension MPCManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID,
                     withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        // Автоматически принимаем приглашения
         invitationHandler(true, session)
     }
 }

@@ -16,11 +16,24 @@ struct whisprApp: App {
             .foregroundColor: UIColor.green,
             .font: UIFont.monospacedSystemFont(ofSize: 17, weight: .bold),
         ]
+
+        appearance.backButtonAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.green,
+            .font: UIFont.monospacedSystemFont(ofSize: 17, weight: .bold),
+        ]
+
+        appearance.backButtonAppearance.highlighted.titleTextAttributes = [
+            .foregroundColor: UIColor.green,
+            .font: UIFont.monospacedSystemFont(ofSize: 17, weight: .bold),
+        ]
+        
+        UINavigationBar.appearance().tintColor = .green
         UINavigationBar.appearance().standardAppearance = appearance
     }
 
     var body: some Scene {
         WindowGroup {
+            
             RootView()
                 .colorScheme(.dark)
                 .foregroundStyle(.green)

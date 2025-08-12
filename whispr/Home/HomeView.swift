@@ -10,13 +10,8 @@ import SwiftUI
 struct HomeView: View {
 
     @EnvironmentObject var router: Router
+    @EnvironmentObject var mpcManager: MPCManager
     
-    private let appVersion =
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        ?? ""
-    private let buildNumber =
-        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
-
     var body: some View {
 
         VStack {
@@ -27,32 +22,23 @@ struct HomeView: View {
                 Text("WHISPR")
                     .fontWeight(.bold)
                     .font(.system(.title, design: .monospaced))
-
-                Button {
-                    router.push(.createRoom)
-                } label: {
-                    Label("Create", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: 200, maxHeight: 36)
+               
+                ActionButton(title: "Create", systemImage: "plus.circle.fill") {
+                    mpcManager.create()
+                    router.push(.chat)
                 }
-
-                Button {
+                
+                ActionButton(title: "Join", systemImage: "link.circle.fill") {
                     router.push(.joinRoom)
-                } label: {
-                    Label("Join", systemImage: "link.circle.fill")
-                        .frame(maxWidth: 200, maxHeight: 36)
                 }
 
             }
-            .buttonStyle(.bordered)
-            .tint(.green)
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
 
             Spacer()
 
-            Text("whispr \(appVersion)+\(buildNumber)")
-                .foregroundStyle(.green.opacity(0.5))
-                .font(.system(.footnote, design: .monospaced))
+            AppInfo()
+            
+            VSpace(height: 16)
         }
     }
 
@@ -61,6 +47,7 @@ struct HomeView: View {
 #Preview {
     RootView()
         .environmentObject(Router())
+        .environmentObject(MPCManager())
         .colorScheme(.dark)
         .foregroundStyle(.green)
         .font(.system(.body, design: .monospaced))

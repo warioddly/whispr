@@ -26,9 +26,14 @@ struct JoinRoomView: View {
                     .buttonStyle(.borderedProminent)
                 }
             }
+            
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .green))
+                .scaleEffect(1.5)
 
         }
         .frame(maxWidth: .infinity)
         .navigationTitle("Connect Room")
+        .tint(.red)
     }
 }
