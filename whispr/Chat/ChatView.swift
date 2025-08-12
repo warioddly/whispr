@@ -10,6 +10,7 @@ import MultipeerConnectivity
 
 struct ChatView: View {
     
+    var peer: MCPeerID?
     @StateObject private var viewModel = ChatViewModel()
     @EnvironmentObject var mpcManager: MPCManager
     
@@ -30,9 +31,18 @@ struct ChatView: View {
 
             ChatToolbarView()
         }
+        .onAppear {
+            if let peer = self.peer {
+                mpcManager.invite(peer: peer)
+                mpcManager.stopSearchPeers()
+            }
+            else {
+                mpcManager.startHosting()
+            }
+        }
         .onDisappear {
             if (mpcManager.isHost) {
-                mpcManager.stop()
+                mpcManager.stopHosting()
             }
         }
         .frame(maxWidth: .infinity)
@@ -90,7 +100,6 @@ struct ConsoleTextFieldView: View {
                 .autocapitalization(.none)
                 .onSubmit {
                     mpcManager.send(message: input)
-                    vmviewModel.sendMessage("user > \(input)")
                     input = ""
                 }
         }

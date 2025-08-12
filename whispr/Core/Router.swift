@@ -12,8 +12,7 @@ import MultipeerConnectivity
 enum Route: Hashable {
     case home
     case joinRoom
-    case createRoom
-    case chat
+    case chat(peer: MCPeerID?)
 }
 
 class Router: ObservableObject {
@@ -34,8 +33,8 @@ class Router: ObservableObject {
 
 
 struct RootView: View {
-    @StateObject private var router = Router()
-    @StateObject private var mpcManager = MPCManager()
+    
+    @EnvironmentObject var router: Router
     
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -44,16 +43,12 @@ struct RootView: View {
                     switch route {
                     case .home:
                         HomeView()
-                    case .chat:
-                        ChatView()
-                    case .createRoom:
-                        CreateRoomView()
+                    case .chat(let peer):
+                        ChatView(peer: peer)
                     case .joinRoom:
                         JoinRoomView()
                     }
                 }
         }
-        .environmentObject(router)
-        .environmentObject(mpcManager)
     }
 }

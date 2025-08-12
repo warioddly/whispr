@@ -24,8 +24,7 @@ struct HomeView: View {
                     .font(.system(.title, design: .monospaced))
                
                 ActionButton(title: "Create", systemImage: "plus.circle.fill") {
-                    mpcManager.create()
-                    router.push(.chat)
+                    router.push(.chat(peer: nil))
                 }
                 
                 ActionButton(title: "Join", systemImage: "link.circle.fill") {

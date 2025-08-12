@@ -36,16 +36,21 @@ class MPCManager: NSObject, ObservableObject {
         serviceBrowser.delegate = self
     }
     
-    func create() {
+    func startHosting() {
         isHost = true
+        messages.removeAll()
         serviceAdvertiser.startAdvertisingPeer()
     }
     
-    func join() {
+    func searchPeers() {
         serviceBrowser.startBrowsingForPeers()
     }
     
-    func stop() {
+    func stopSearchPeers() {
+        serviceBrowser.stopBrowsingForPeers()
+    }
+    
+    func stopHosting() {
         isHost = false
         serviceAdvertiser.stopAdvertisingPeer()
         serviceBrowser.stopBrowsingForPeers()

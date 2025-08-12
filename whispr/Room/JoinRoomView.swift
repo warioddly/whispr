@@ -20,8 +20,7 @@ struct JoinRoomView: View {
                     Text(peer.displayName)
                     Spacer()
                     Button("Join") {
-                        mpcManager.invite(peer: peer)
-                        router.push(.chat)
+                        router.push(.chat(peer: peer))
                     }
                     .buttonStyle(.borderedProminent)
                 }
@@ -31,6 +30,12 @@ struct JoinRoomView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .green))
                 .scaleEffect(1.5)
 
+        }
+        .onAppear {
+            mpcManager.searchPeers()
+        }
+        .onDisappear {
+            mpcManager.stopSearchPeers()
         }
         .frame(maxWidth: .infinity)
         .navigationTitle("Connect Room")
